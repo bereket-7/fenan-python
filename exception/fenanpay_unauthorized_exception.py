@@ -1,4 +1,4 @@
-class FenanpayUnAuthorizedException(Exception):
+class FenanpayUnauthorizedException(Exception):
     def __init__(self, message, *args):
         self.msg = message
         # Ensure everything is assigned properly

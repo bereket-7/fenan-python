@@ -1,7 +1,5 @@
 import json
 from urllib.parse import unquote
-from typing import Optional
-
 from schemas import fenanpay_transaction
 
 

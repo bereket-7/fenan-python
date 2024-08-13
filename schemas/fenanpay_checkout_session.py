@@ -1,5 +1,4 @@
 import json
-from typing import Optional
 
 from schemas import fenanpay_transaction
 

@@ -1,23 +1,28 @@
 import requests
-from .core.fenanpay_checkout import FenanpayCheckout
-from .core.fenanpay_direct_pay import FenanpayDirectPay
+
+from core import fenanpay_checkout, fenanpay_direct_pay
 
 
-class ArifPay:
+class Fenanpay:
     DEFAULT_HOST = 'https://api.fenanpay.com/api'
     API_VERSION = '/v1'
     PACKAGE_VERSION = '1.0.0'
-    DEFAULT_TIMEOUT = 1000 * 60 * 2
+    DEFAULT_TIMEOUT = 120
 
-    def __init__(self, apikey: str):
+    def __init__(self, apikey):
         self.apikey = apikey
-        self.http_client = requests.Session()
-        self.http_client.headers.update({
-            'apiKey': apikey,
-            "Content-Type": "application/json",
-            "Accepts": "application/json",
-        })
-        self.http_client.base_url = self.DEFAULT_HOST
+        self.headers = {
+            'apiKey': self.apikey,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+        self.checkout = fenanpay_checkout.FenanpayCheckout(self)
+        self.direct_pay = fenanpay_direct_pay.FenanpayDirectPay(self)
 
-        self.checkout = FenanpayCheckout(self.http_client)
-        self.direct_pay = FenanpayDirectPay(self.http_client)
+    def _make_request(self, method, endpoint, data=None):
+        url = f"{self.DEFAULT_HOST}{self.API_VERSION}{endpoint}"
+        response = requests.request(
+            method, url, headers=self.headers, json=data, timeout=self.DEFAULT_TIMEOUT
+        )
+        response.raise_for_status()
+        return response.json()

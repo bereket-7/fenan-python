@@ -1,36 +1,45 @@
 import json
-from typing import Optional
+from dataclasses import dataclass
+from typing import Dict, Any
+
+from schemas.payment_method_type import PaymentMethodType
+from schemas.transaction_status import TransactionStatus
 
 
+@dataclass
 class FenanpayTransaction:
-    def __init__(self, id, transaction_id, payment_type, transaction_status, created_at, updated_at):
-        self.id = id
-        self.transaction_id = transaction_id
-        self.payment_type = payment_type
-        self.transaction_status = transaction_status
-        self.created_at = created_at
-        self.updated_at = updated_at
+    id: str
+    transaction_id: str
+    payment_type: PaymentMethodType
+    transaction_status: TransactionStatus
+    created_at: str
+    updated_at: str
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
             "transactionId": self.transaction_id,
-            "paymentType": self.payment_type,
-            "transactionStatus": self.transaction_status,
+            "paymentType": self.payment_type.value,
+            "transactionStatus": self.transaction_status.value,
             "createdAt": self.created_at,
             "updatedAt": self.updated_at,
         }
 
     @staticmethod
-    def from_json(data: dict):
+    def from_dict(data: Dict[str, Any]) -> 'FenanpayTransaction':
         return FenanpayTransaction(
             id=data["id"],
             transaction_id=data["transactionId"],
-            payment_type=data["paymentType"],
-            transaction_status=data["transactionStatus"],
+            payment_type=PaymentMethodType(data["paymentType"]),
+            transaction_status=TransactionStatus(data["transactionStatus"]),
             created_at=data["createdAt"],
             updated_at=data["updatedAt"]
         )
 
-    def to_json(self):
+    def to_json(self) -> str:
         return json.dumps(self.to_dict())
+
+    @staticmethod
+    def from_json(json_str: str) -> 'FenanpayTransaction':
+        data = json.loads(json_str)
+        return FenanpayTransaction.from_dict(data)

@@ -1,12 +1,14 @@
-import click
+import sys
 
 
-@click.command()
-@click.argument('args', nargs=-1)
-def fenanpay_command(args):
-    """My command"""
-    click.echo('All done')
+class Command:
+    help = 'My command'
+
+    def handle(self, *args, **kwargs):
+        print('All done')
+        return 0
 
 
-if __name__ == '__main__':
-    fenanpay_command()
+if __name__ == "__main__":
+    command = Command()
+    command.handle()

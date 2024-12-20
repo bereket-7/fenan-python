@@ -1,44 +1,33 @@
 import json
-from typing import List, Optional, Dict, Any
-
-from schemas.currency import Currency
-from schemas.customer_info import CustomerInfo
+from typing import Optional, List, Dict, Any
+from dataclasses import dataclass
 from schemas.payment_item import PaymentItem
+from schemas.customer_info import CustomerInfo
+from schemas.currency import Currency
 from schemas.payment_method_type import PaymentMethodType
 from schemas.split_payment import SplitPayment
 
 
+@dataclass
 class FenanpayCheckoutRequest:
-    def __init__(self,
-                 amount: float,
-                 items: List[PaymentItem],
-                 currency: Currency,
-                 payment_intent_unique_id: str,
-                 payment_type: PaymentMethodType,
-                 payment_link_unique_id: Optional[str] = None,
-                 split_payment: Optional[SplitPayment] = None,
-                 return_url: str = "",
-                 expire_in: int = 0,
-                 callback_url: Optional[str] = None,
-                 commission_paid_by_customer: bool = False,
-                 customer_info: Optional[CustomerInfo] = None):
-        self.amount = amount
-        self.items = items
-        self.currency = currency
-        self.payment_intent_unique_id = payment_intent_unique_id
-        self.payment_type = payment_type
-        self.payment_link_unique_id = payment_link_unique_id
-        self.split_payment = split_payment
-        self.return_url = return_url
-        self.expire_in = expire_in
-        self.callback_url = callback_url
-        self.commission_paid_by_customer = commission_paid_by_customer
-        self.customer_info = customer_info
+    amount: float
+    currency: Currency
+    payment_intent_unique_id: str
+    payment_type: PaymentMethodType
+    return_url: str
+    expire_in: int
+    commission_paid_by_customer: bool
+
+    items: Optional[List[PaymentItem]] = None
+    payment_link_unique_id: Optional[str] = None
+    split_payment: Optional[SplitPayment] = None
+    callback_url: Optional[str] = None
+    customer_info: Optional[CustomerInfo] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "amount": self.amount,
-            "items": [item.to_dict() for item in self.items],
+            "paymentItem": [item.to_dict() for item in self.items] if self.items else None,
             "currency": self.currency.value,
             "paymentIntentUniqueId": self.payment_intent_unique_id,
             "paymentType": self.payment_type.value,
@@ -56,7 +45,7 @@ class FenanpayCheckoutRequest:
         return FenanpayCheckoutRequest(
             amount=data.get("amount", 0.0),
             items=[PaymentItem.from_dict(item)
-                   for item in data.get("items", [])],
+                   for item in data.get("paymentItem", [])] if data.get("paymentItem") else None,
             currency=Currency(data.get("currency", "")),
             payment_intent_unique_id=data.get("paymentIntentUniqueId", ""),
             payment_type=PaymentMethodType(data.get("paymentType", "")),

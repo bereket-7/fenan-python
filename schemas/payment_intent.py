@@ -1,48 +1,36 @@
 import json
 from typing import List, Dict, Any, Optional
-
-from customer_info import CustomerInfo
+from dataclasses import dataclass
+from schemas.customer_info import CustomerInfo
 from schemas.currency import Currency
 from schemas.payment_method_type import PaymentMethodType
-from split_payment import SplitPayment
+from schemas.split_payment import SplitPayment
 
 
+@dataclass
 class PaymentIntent:
-    def __init__(self,
-                 amount: float,
-                 items: List[Dict[str, Any]],
-                 currency: Currency,
-                 payment_intent_unique_id: str,
-                 payment_link_unique_id: str,
-                 method_type: List[PaymentMethodType],
-                 split_payment: List[SplitPayment],
-                 return_url: str,
-                 expire_in: int,
-                 callback_url: str,
-                 commission_paid_by_customer: bool,
-                 customer_info: Optional[CustomerInfo] = None):
-        self.amount = amount
-        self.items = items
-        self.currency = currency
-        self.payment_intent_unique_id = payment_intent_unique_id
-        self.payment_link_unique_id = payment_link_unique_id
-        self.method_type = method_type
-        self.split_payment = split_payment
-        self.return_url = return_url
-        self.expire_in = expire_in
-        self.callback_url = callback_url
-        self.commission_paid_by_customer = commission_paid_by_customer
-        self.customer_info = customer_info
+    amount: float
+    currency: Currency
+    payment_intent_unique_id: str
+    method_type: List[PaymentMethodType]
+    return_url: str
+    expire_in: int
+    callback_url: str
+    commission_paid_by_customer: bool
+    items: Optional[List[Dict[str, Any]]] = None
+    payment_link_unique_id: Optional[str] = None
+    split_payment: Optional[List[SplitPayment]] = None
+    customer_info: Optional[CustomerInfo] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             'amount': self.amount,
-            'items': self.items,
-            'currency': self.currency,
+            'items': self.items or [],
+            'currency': self.currency.value,
             'paymentIntentUniqueId': self.payment_intent_unique_id,
             'paymentLinkUniqueId': self.payment_link_unique_id,
             'methodType': [method.value for method in self.method_type],
-            'splitPayment': [sp.to_dict() for sp in self.split_payment],
+            'splitPayment': [sp.to_dict() for sp in self.split_payment] if self.split_payment else [],
             'returnUrl': self.return_url,
             'expireIn': self.expire_in,
             'callbackUrl': self.callback_url,
@@ -55,7 +43,7 @@ class PaymentIntent:
         return PaymentIntent(
             amount=data.get('amount', 0.0),
             items=data.get('items', []),
-            currency=data.get('currency', ''),
+            currency=Currency(data.get('currency', '')),
             payment_intent_unique_id=data.get('paymentIntentUniqueId', ''),
             payment_link_unique_id=data.get('paymentLinkUniqueId', ''),
             method_type=[PaymentMethodType(m)
@@ -66,9 +54,9 @@ class PaymentIntent:
             expire_in=data.get('expireIn', 0),
             callback_url=data.get('callbackUrl', ''),
             commission_paid_by_customer=data.get(
-                'commissionPaidByCustomer', 0.0),
+                'commissionPaidByCustomer', False),
             customer_info=CustomerInfo.from_dict(
-                data['customerInfo']) if 'customerInfo' in data else None
+                data['customerInfo']) if 'customerInfo' in data else None,
         )
 
     def to_json(self) -> str:

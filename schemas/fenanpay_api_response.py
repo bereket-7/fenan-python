@@ -1,12 +1,13 @@
 import json
+from dataclasses import dataclass
 from typing import Any, Dict
 
 
+@dataclass
 class FenanpayAPIResponse:
-    def __init__(self, status: Any, message: Any, content: Any):
-        self.status = status
-        self.message = message
-        self.content = content
+    status: Any
+    message: Any
+    content: Any
 
     def to_dict(self) -> Dict[str, Any]:
         return {

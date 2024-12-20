@@ -1,7 +1,5 @@
 import requests
 
-from core import fenanpay_checkout, fenanpay_direct_pay
-
 
 class Fenanpay:
     DEFAULT_HOST = 'https://api.fenanpay.com/api'
@@ -16,13 +14,15 @@ class Fenanpay:
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         }
-        self.checkout = fenanpay_checkout.FenanpayCheckout(self)
-        self.direct_pay = fenanpay_direct_pay.FenanpayDirectPay(self)
+        from api.fenanpay_checkout_api import FenanpayCheckout
+        from api.express_pay_api import ExpressPay
+        self.checkout = FenanpayCheckout(self)
+        self.express_pay = ExpressPay(self)
 
-    def _make_request(self, method, endpoint, data=None):
-        url = f"{self.DEFAULT_HOST}{self.API_VERSION}{endpoint}"
+    def make_request(self, method, endpoint, data=None):
+        url = f"{Fenanpay.DEFAULT_HOST}{Fenanpay.API_VERSION}{endpoint}"
+        print(f"Requesting URL: {url}")
         response = requests.request(
-            method, url, headers=self.headers, json=data, timeout=self.DEFAULT_TIMEOUT
-        )
+            method, url, headers=self.headers, json=data, timeout=Fenanpay.DEFAULT_TIMEOUT)
         response.raise_for_status()
         return response.json()
